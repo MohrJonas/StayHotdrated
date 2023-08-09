@@ -1,0 +1,7 @@
+name: StayHotdrated
+database: true
+api-version: 1.20
+author: MohrJonas
+version: 1.0-SNAPSHOT
+main: mohr.jonas.hotdrated.StayHotdrated
+load: STARTUP

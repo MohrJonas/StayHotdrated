@@ -1,0 +1,24 @@
+{
+	// Name of the structure, required
+	"name": "float",
+	// Biome configuration, can be null -> can spawn in every biome
+	"biomes": {
+		// List of biomes, like minecraft:plains, ...
+		"list": [],
+		// Whether list is whitelist or blacklist
+		"isWhitelist": true
+	},
+	// Chest placement
+	"chests": [
+		{
+			// Coordinates of the chest, relative to the origin
+			"relativeLocation": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			// If chest doesn't spawn, what block should it be replaced with
+			"replaceWith": "minecraft:air"
+		}
+	]
+}
