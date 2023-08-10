@@ -20,5 +20,11 @@
 			// If chest doesn't spawn, what block should it be replaced with
 			"replaceWith": "minecraft:air"
 		}
-	]
+	],
+	// Coordinates of the spawned mobs, relative to the origin
+	"mobSpawnLocation": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	}
 }

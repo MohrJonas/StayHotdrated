@@ -1,5 +1,7 @@
 package mohr.jonas.hotdrated
 
+import io.github.reactivecircus.cache4k.Cache
+import mohr.jonas.hotdrated.data.temperature.TemperatureReading
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
@@ -49,14 +51,26 @@ fun Player.applyThirst() {
     )
 }
 
-fun Double.isAcceptableTemperature() = this in 10.0..25.0
+fun Double.isAcceptableTemperature() = this in 5.0..30.0
 
-fun Player.displayTemperature(finalTemp: Double) {
-    this.sendActionBar(
+fun Player.displayTemperature(finalTemp: Double, reading: TemperatureReading) {
+    val icons = arrayOf("🌡", "🌊", "🪶", "☔", "🔥", "🎽")
+    val component =
         (if (finalTemp.isAcceptableTemperature()) Component.text("☀ ").color(NamedTextColor.YELLOW) else Component.text("☃ ").color(NamedTextColor.AQUA))
-            .append(Component.text("${finalTemp.roundToInt()}°C").color(NamedTextColor.WHITE))
+            .append(Component.text("${finalTemp.roundToInt()}°C (").color(NamedTextColor.WHITE)).append(
+        baseComponent(icons[0], reading.baseTemperature).color(NamedTextColor.RED)).append(
+        baseComponent(icons[1], reading.waterTemperature).color(NamedTextColor.YELLOW)).append(
+        baseComponent(icons[2], reading.movementTemperature).color(NamedTextColor.AQUA)).append(
+        baseComponent(icons[3], reading.weatherTemperature).color(NamedTextColor.GREEN)).append(
+        baseComponent(icons[4], reading.blockTemperature).color(NamedTextColor.LIGHT_PURPLE)).append(
+        baseComponent(icons[5], reading.armorTemperature).color(NamedTextColor.GOLD)).append(
+        Component.text(" )").color(NamedTextColor.WHITE))
+    this.sendActionBar(
+        component
     )
 }
+
+private fun baseComponent(icon: String, text: Double) = Component.text(" -> $icon ${text.roundToInt()}°C")
 
 fun Player.displayWater(thirst: Double) {
     this.sendActionBar(Component.text("☕ ${thirst.roundToInt()} / 20").color(NamedTextColor.BLUE))
@@ -74,9 +88,13 @@ fun <T> Random.weightedChoice(choices: List<T>, weights: List<Int>): T {
         throw UnsupportedOperationException("Choice weights ($weights) don't add up to 100%")
     if(choices.size != weights.size)
         throw UnsupportedOperationException("Size of choices != Size of weights")
-    val random = Random.nextInt(0, 101)
+    val random = nextInt(0, 101)
     for (i in choices.indices) {
-        val range = (if(i == 0) 0 else weights[i - 1])..<weights[i]
+        val range = if (i == 0) 0..<weights[i]
+        else {
+            val sum = weights.subList(0, i).sum()
+            sum..<sum + weights[i]
+        }
         if(random in range)
             return choices[i]
     }

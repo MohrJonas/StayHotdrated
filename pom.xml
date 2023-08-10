@@ -176,6 +176,11 @@
             <version>2.2.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.reactivecircus.cache4k</groupId>
+            <artifactId>cache4k-jvm</artifactId>
+            <version>0.11.0</version>
+        </dependency>
     </dependencies>
 
 </project>

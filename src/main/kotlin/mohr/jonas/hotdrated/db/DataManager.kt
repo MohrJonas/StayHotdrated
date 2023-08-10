@@ -9,12 +9,15 @@ import mohr.jonas.hotdrated.db.tables.PlayerTemperatureTable
 import mohr.jonas.hotdrated.db.tables.PlayerThirstTable
 import mohr.jonas.hotdrated.db.tables.TransactionTable
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DataManager {
 
     init {
         transaction {
+            addLogger(StdOutSqlLogger)
             SchemaUtils.create(DevelopmentLevelTable, PlayerTemperatureTable, PlayerThirstTable, TransactionTable)
         }
     }

@@ -7,6 +7,6 @@ import java.util.UUID
 object PlayerThirstTable : IntIdTable("PlayerThirsts") {
 
     val uuid: Column<UUID> = uuid("uuid")
-    val thirst: Column<Double> = double("thrist")
+    val thirst: Column<Double> = double("thirst")
 
 }

@@ -2,25 +2,23 @@ package mohr.jonas.hotdrated.managers
 
 import com.jeff_media.customblockdata.CustomBlockData
 import kotlinx.serialization.json.Json
-import mohr.jonas.hotdrated.StayHotdrated
-import mohr.jonas.hotdrated.choice
+import mohr.jonas.hotdrated.*
 import mohr.jonas.hotdrated.data.lootdrop.ChestRarity
 import mohr.jonas.hotdrated.data.lootdrop.ChestSize
 import mohr.jonas.hotdrated.data.lootdrop.ChestType
 import mohr.jonas.hotdrated.data.lootdrop.StructureConfig
 import mohr.jonas.hotdrated.db.DataManager
-import mohr.jonas.hotdrated.peek
-import mohr.jonas.hotdrated.weightedChoice
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.*
 import org.bukkit.World.Environment
 import org.bukkit.block.Container
 import org.bukkit.block.structure.Mirror
 import org.bukkit.block.structure.StructureRotation
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -32,6 +30,7 @@ import java.util.concurrent.ThreadLocalRandom
 import kotlin.io.path.extension
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.minutes
 
 object LootdropManager : org.bukkit.event.Listener {
 
@@ -51,6 +50,16 @@ object LootdropManager : org.bukkit.event.Listener {
             }
             .toList()
         println("Loaded ${structures.size} lootdrop structure(s)")
+        Bukkit.getScheduler().scheduleSyncDelayedTask(StayHotdrated.PLUGIN, {
+            performTimedLootdrop()
+        }, Random.nextLong(5.minutes.inTicks.toLong(), 10.minutes.inTicks.toLong()))
+    }
+
+    private fun performTimedLootdrop() {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(StayHotdrated.PLUGIN, {
+            performLootdrop()
+            performTimedLootdrop()
+        }, Random.nextLong(5.minutes.inTicks.toLong(), 10.minutes.inTicks.toLong()))
     }
 
     @EventHandler
@@ -59,7 +68,7 @@ object LootdropManager : org.bukkit.event.Listener {
         if (event.itemInHand.lore()?.firstOrNull()?.let { it as TextComponent }?.content() != "TestLore") return
         event.block.world.setType(event.block.location, Material.AIR)
         event.block.world.getBlockAt(event.block.location).state.update()
-        performLootdrop()
+        performLootdrop(event.block.location)
     }
 
     @EventHandler
@@ -73,7 +82,7 @@ object LootdropManager : org.bukkit.event.Listener {
         }
     }
 
-    private fun performLootdrop() {
+    private fun performLootdrop(preciseLocation: Location? = null) {
         val players = StayHotdrated.PLUGIN.server.onlinePlayers.filter { it.world.environment == Environment.NORMAL }
         val centerX = players.sumOf { it.location.x } / players.size
         val centerZ = players.sumOf { it.location.z } / players.size
@@ -90,13 +99,13 @@ object LootdropManager : org.bukkit.event.Listener {
                 config.biomes.list.contains(biome.key.key).let { if (config.biomes.isWhitelist) it else it.not() }
         }.peek())
         val structure = Bukkit.getStructureManager().getStructure(NamespacedKey("rumblecraft", config.name))!!
-        val location = Location(world, positionX.toDouble(), positionY.toDouble(), positionZ.toDouble())
+        val location = preciseLocation ?: Location(world, positionX.toDouble(), positionY.toDouble(), positionZ.toDouble())
         structure.place(location, true, StructureRotation.NONE, Mirror.NONE, -1, ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current())
         println("placed structure at $location")
         config.chests
             .filter { Random.nextBoolean() }
             .forEach { chest ->
-                val chestLocation = location.clone().add(chest.relativeLocation.x.toDouble(), chest.relativeLocation.y.toDouble(), chest.relativeLocation.z.toDouble())
+                val chestLocation = location.clone().add(chest.relativeLocation.toBukkitLocation())
                 if (world.getBlockAt(chestLocation).type != Material.CHEST) return@forEach
                 val container = world.getBlockAt(chestLocation).state as Container
                 //TODO use rarity
@@ -115,11 +124,40 @@ object LootdropManager : org.bukkit.event.Listener {
                 val dataContainer = CustomBlockData(world.getBlockAt(chestLocation), StayHotdrated.PLUGIN)
                 dataContainer[NamespacedKey("rumblecraft", "is_lootdrop_chest"), PersistentDataType.BOOLEAN] = true
             }
-        repeat(Random.nextInt(0, 10)) {
-            world.spawnEntity(
-                location.clone().add(Random.nextInt(-5, 6).toDouble(), 3.0, Random.nextInt(-5, 6).toDouble()),
+        Random.weightedChoice(listOf(LootdropManager::createBigChallenge, LootdropManager::createSmallChallenge, null), listOf(20, 60, 20))
+            ?.invoke(location.clone().add(config.mobSpawnLocation.toBukkitLocation()))
+        announceDrop(location, players)
+    }
+
+    private fun createSmallChallenge(location: Location) {
+        repeat(Random.nextInt(5, 10 + (DataManager.developmentLevel.get() / 10).roundToInt())) {
+            MobCreator.spawnMob(
+                location,
                 Random.choice(listOf(EntityType.SKELETON, EntityType.ZOMBIE, EntityType.SPIDER, EntityType.CAVE_SPIDER, EntityType.PILLAGER, EntityType.ENDERMAN))
-            )
+            ) {
+                it.removeWhenFarAway = false
+            }
+        }
+    }
+
+    private fun createBigChallenge(location: Location) {
+        repeat(Random.nextInt(10, 15 + (DataManager.developmentLevel.get() / 10).roundToInt())) {
+            MobCreator.spawnMob(location, Random.choice(listOf(EntityType.MAGMA_CUBE, EntityType.WITHER_SKELETON, EntityType.SLIME, EntityType.PHANTOM))) {
+                it.removeWhenFarAway = false
+            }
+        }
+    }
+
+    private fun announceDrop(location: Location, players: List<Player>) {
+        players.forEach {
+            it.sendTitle("Lootdrop landed at [${location.x} ${location.y} ${location.z}]", null, 10, 120, 20)
+            it.playSound(it, Sound.ITEM_GOAT_HORN_SOUND_0, 500f, 1f)
+            if (it.isOp) {
+                val coordinateComponent = Component.text("[${location.x} ${location.y} ${location.z}]").color(NamedTextColor.GREEN)
+                    .clickEvent(ClickEvent.runCommand("/tp @p ${location.x} ${location.y} ${location.z}"))
+                val message = Component.text("Lootdrop landed at ").color(NamedTextColor.AQUA).append(coordinateComponent)
+                it.sendMessage(message)
+            }
         }
     }
 }

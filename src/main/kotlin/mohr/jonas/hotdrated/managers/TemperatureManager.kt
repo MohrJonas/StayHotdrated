@@ -1,8 +1,10 @@
 package mohr.jonas.hotdrated.managers
 
+import io.github.reactivecircus.cache4k.Cache
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.StayHotdrated
 import mohr.jonas.hotdrated.data.temperature.BiomeData
+import mohr.jonas.hotdrated.data.temperature.TemperatureReading
 import mohr.jonas.hotdrated.db.DataManager
 import mohr.jonas.hotdrated.mapToRange
 import org.bukkit.Material
@@ -12,6 +14,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
+import java.util.*
 
 object TemperatureManager : Listener {
 
@@ -32,45 +35,15 @@ object TemperatureManager : Listener {
         )
     }
 
-    fun getPlayerTemperature(player: Player): Double {
+    fun getPlayerTemperature(player: Player): TemperatureReading {
         DataManager.temperature.setPlayerMoveStacks(player.uniqueId, (DataManager.temperature.getPlayerMoveStacks(player.uniqueId) - 20.0).coerceAtLeast(0.0))
-        return player.getBaseTemperature()
-            // Apply height modifier
-            .let {
-                println("===============================")
-                println("Base temperature: $it")
-                val max = player.world.maxHeight.toDouble()
-                val min = player.world.minHeight.toDouble()
-                it + player.location.y.mapToRange(min..max, -15.0..15.0)
-            }
-            // Apply water modifier
-            .let {
-                println("w/ Height modifier: $it")
-                if (player.isInWater) it - it / 4.0 else it
-            }
-            // Apply movement modifier
-            .let {
-                println("w/ Water modifier: $it")
-                it + DataManager.temperature.getPlayerMoveStacks(player.uniqueId).mapToRange(0.0..200.0, 0.0..15.0)
-            }
-            // Apply weather modifier
-            .let {
-                println("w/ Movement modifier: $it")
-                if (player.isInRain) it - it / 8.0 else it
-            }
-            // Apply heat blocks modifier
-            .let {
-                println("w/ Rain modifier: $it")
-                it + player.calculateBlockTemperatureOffset()
-            }
-            // Apply armor modifier
-            .let {
-                println("w/ Block modifier: $it")
-                it + player.calculateArmorTemperatureOffset()
-            }.also {
-                println("w/ Armor modifier: $it")
-                println("===============================")
-            }
+        val baseTemperature = player.getBaseTemperature()
+        val waterTemperature = if (player.isInWater) baseTemperature - baseTemperature / 4.0 else baseTemperature
+        val movementTemperature = waterTemperature + DataManager.temperature.getPlayerMoveStacks(player.uniqueId).mapToRange(0.0..200.0, 0.0..15.0)
+        val weatherTemperature = if (player.isInRain) movementTemperature - movementTemperature / 8.0 else movementTemperature
+        val blockTemperature = waterTemperature + player.calculateBlockTemperatureOffset()
+        val armorTemperature = blockTemperature + player.calculateArmorTemperatureOffset()
+        return TemperatureReading(baseTemperature, waterTemperature, movementTemperature, weatherTemperature, blockTemperature, armorTemperature)
     }
 
     private fun Player.getBaseTemperature() = when (this.world.environment) {

@@ -10,6 +10,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerRespawnEvent
 
 object ThirstManager : Listener {
     fun getPlayerThirst(player: Player): Double {
@@ -20,16 +21,21 @@ object ThirstManager : Listener {
     fun onBlockBreak(event: BlockBreakEvent) {
         DataManager.thirst.setPlayerThirst(
             event.player.uniqueId,
-            (DataManager.thirst.getPlayerThirst(event.player.uniqueId) - (event.block.type.hardness / 100)).coerceAtLeast(0.0)
+            (DataManager.thirst.getPlayerThirst(event.player.uniqueId) - (event.block.type.hardness / 200)).coerceAtLeast(0.0)
         )
     }
 
     @EventHandler
-    fun onAttack(event: EntityDamageEvent) {
+    fun onPlayerRespawn(event: PlayerRespawnEvent) {
+        DataManager.thirst.setPlayerThirst(event.player.uniqueId, 20.0)
+    }
+
+    @EventHandler
+    fun onDamageTaken(event: EntityDamageEvent) {
         if (event.entity.type != EntityType.PLAYER) return
         DataManager.thirst.setPlayerThirst(
             (event.entity as Player).uniqueId,
-            (DataManager.thirst.getPlayerThirst((event.entity as Player).uniqueId) - (event.finalDamage / 10)).coerceAtLeast(0.0)
+            (DataManager.thirst.getPlayerThirst((event.entity as Player).uniqueId) - (event.finalDamage / 15)).coerceAtLeast(0.0)
         )
     }
 
@@ -37,7 +43,7 @@ object ThirstManager : Listener {
     fun onMove(event: PlayerMoveEvent) {
         DataManager.thirst.setPlayerThirst(
             event.player.uniqueId,
-            (DataManager.thirst.getPlayerThirst(event.player.uniqueId) - (event.from.distance(event.to) / 100)).coerceAtLeast(0.0)
+            (DataManager.thirst.getPlayerThirst(event.player.uniqueId) - (event.from.distance(event.to) / 200)).coerceAtLeast(0.0)
         )
     }
 
