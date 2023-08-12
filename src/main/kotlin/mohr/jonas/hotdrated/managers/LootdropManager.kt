@@ -3,6 +3,7 @@ package mohr.jonas.hotdrated.managers
 import com.jeff_media.customblockdata.CustomBlockData
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.*
+import mohr.jonas.hotdrated.StayHotdrated.Companion.CONFIG
 import mohr.jonas.hotdrated.data.lootdrop.ChestRarity
 import mohr.jonas.hotdrated.data.lootdrop.ChestSize
 import mohr.jonas.hotdrated.data.lootdrop.ChestType
@@ -30,14 +31,13 @@ import java.util.concurrent.ThreadLocalRandom
 import kotlin.io.path.extension
 import kotlin.math.roundToInt
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.minutes
 
 object LootdropManager : org.bukkit.event.Listener {
 
     private val structures: List<StructureConfig>
 
     init {
-        val folder = StayHotdrated.PLUGIN.dataFolder.toPath()
+        val folder = StayHotdrated.PLUGIN.dataFolder.toPath().resolve("lootdrops")
         Files.createDirectories(folder)
         structures = Files.list(folder)
             .filter { it.extension == "json" }
@@ -52,20 +52,20 @@ object LootdropManager : org.bukkit.event.Listener {
         println("Loaded ${structures.size} lootdrop structure(s)")
         Bukkit.getScheduler().scheduleSyncDelayedTask(StayHotdrated.PLUGIN, {
             performTimedLootdrop()
-        }, Random.nextLong(5.minutes.inTicks.toLong(), 10.minutes.inTicks.toLong()))
+        }, Random.nextLong(CONFIG.lootdrop.dropMinDelay, CONFIG.lootdrop.dropMaxDelay))
     }
 
     private fun performTimedLootdrop() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(StayHotdrated.PLUGIN, {
             performLootdrop()
             performTimedLootdrop()
-        }, Random.nextLong(5.minutes.inTicks.toLong(), 10.minutes.inTicks.toLong()))
+        }, Random.nextLong(CONFIG.lootdrop.dropMinDelay, CONFIG.lootdrop.dropMaxDelay))
     }
 
     @EventHandler
     fun onBlockPlace(event: BlockPlaceEvent) {
         //TODO change lore to something proper
-        if (event.itemInHand.lore()?.firstOrNull()?.let { it as TextComponent }?.content() != "TestLore") return
+        if (event.itemInHand.lore()?.firstOrNull()?.let { it as TextComponent }?.content() != CONFIG.lootdrop.blockLore) return
         event.block.world.setType(event.block.location, Material.AIR)
         event.block.world.getBlockAt(event.block.location).state.update()
         performLootdrop(event.block.location)
@@ -78,7 +78,7 @@ object LootdropManager : org.bukkit.event.Listener {
         if (!dataContainer.has(NamespacedKey("rumblecraft", "is_lootdrop_chest"))) return
         if (dataContainer[NamespacedKey("rumblecraft", "is_lootdrop_chest"), PersistentDataType.BOOLEAN]!!) {
             dataContainer[NamespacedKey("rumblecraft", "is_lootdrop_chest"), PersistentDataType.BOOLEAN] = false
-            event.player.giveExpLevels(100)
+            event.player.giveExpLevels(CONFIG.lootdrop.chestOpenXp)
         }
     }
 
@@ -87,11 +87,17 @@ object LootdropManager : org.bukkit.event.Listener {
         val centerX = players.sumOf { it.location.x } / players.size
         val centerZ = players.sumOf { it.location.z } / players.size
         val positionX =
-            (centerX + Random.nextInt(((-200 * DataManager.developmentLevel.get()).roundToInt()), (100 + 50 * DataManager.developmentLevel.get()).roundToInt())).roundToInt()
+            (centerX + Random.nextInt(
+                ((-CONFIG.lootdrop.dropRadius + 50 * DataManager.developmentLevel.get()).roundToInt()),
+                (CONFIG.lootdrop.dropRadius + 50 * DataManager.developmentLevel.get()).roundToInt()
+            )).roundToInt()
         val positionZ =
-            (centerZ + Random.nextInt(((-200 * DataManager.developmentLevel.get()).roundToInt()), (100 + 50 * DataManager.developmentLevel.get()).roundToInt())).roundToInt()
+            (centerZ + Random.nextInt(
+                ((-CONFIG.lootdrop.dropRadius + 50 * DataManager.developmentLevel.get()).roundToInt()),
+                (CONFIG.lootdrop.dropRadius + 50 * DataManager.developmentLevel.get()).roundToInt()
+            )).roundToInt()
         val world = StayHotdrated.PLUGIN.server.worlds.find { it.environment == Environment.NORMAL }!!
-        val positionY = (310 downTo 0).firstOrNull { !world.getBlockAt(positionX, it, positionZ).isEmpty }!!
+        val positionY = (310 downTo 0).firstOrNull { !world.getBlockAt(positionX, it, positionZ).isEmpty }!! + 1
         val biome = world.getBiome(positionX, positionY, positionZ)
         val config = Random.choice(structures.filter { config ->
             if (config.biomes == null) true
@@ -100,7 +106,15 @@ object LootdropManager : org.bukkit.event.Listener {
         }.peek())
         val structure = Bukkit.getStructureManager().getStructure(NamespacedKey("rumblecraft", config.name))!!
         val location = preciseLocation ?: Location(world, positionX.toDouble(), positionY.toDouble(), positionZ.toDouble())
-        structure.place(location, true, StructureRotation.NONE, Mirror.NONE, -1, ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current())
+        structure.place(
+            location,
+            true,
+            StructureRotation.NONE,
+            Mirror.NONE,
+            -1,
+            ThreadLocalRandom.current().nextFloat(CONFIG.lootdrop.maxDestruction, CONFIG.lootdrop.minDestruction),
+            ThreadLocalRandom.current()
+        )
         println("placed structure at $location")
         config.chests
             .filter { Random.nextBoolean() }
@@ -109,8 +123,19 @@ object LootdropManager : org.bukkit.event.Listener {
                 if (world.getBlockAt(chestLocation).type != Material.CHEST) return@forEach
                 val container = world.getBlockAt(chestLocation).state as Container
                 //TODO use rarity
-                val rarity = Random.weightedChoice(ChestRarity.entries, listOf(45, 28, 12, 8, 4, 2, 1))
-                val size = Random.weightedChoice(ChestSize.entries, listOf(50, 38, 12))
+                val rarity = Random.weightedChoice(
+                    ChestRarity.entries,
+                    listOf(
+                        CONFIG.lootdrop.garbageChance,
+                        CONFIG.lootdrop.commonChance,
+                        CONFIG.lootdrop.uncommonChance,
+                        CONFIG.lootdrop.rareChance,
+                        CONFIG.lootdrop.epicChance,
+                        CONFIG.lootdrop.legendaryChance,
+                        CONFIG.lootdrop.mysticalChance
+                    )
+                )
+                val size = Random.weightedChoice(ChestSize.entries, listOf(CONFIG.lootdrop.smallChance, CONFIG.lootdrop.mediumChance, CONFIG.lootdrop.largeChance))
                 val type = Random.choice(ChestType.entries)
                 val lootTable = Bukkit.getLootTable(NamespacedKey("rumblecraft", type.lootTableName))!!
                 repeat(size.multiplier) {
@@ -124,7 +149,10 @@ object LootdropManager : org.bukkit.event.Listener {
                 val dataContainer = CustomBlockData(world.getBlockAt(chestLocation), StayHotdrated.PLUGIN)
                 dataContainer[NamespacedKey("rumblecraft", "is_lootdrop_chest"), PersistentDataType.BOOLEAN] = true
             }
-        Random.weightedChoice(listOf(LootdropManager::createBigChallenge, LootdropManager::createSmallChallenge, null), listOf(20, 60, 20))
+        Random.weightedChoice(
+            listOf(LootdropManager::createBigChallenge, LootdropManager::createSmallChallenge, null),
+            listOf(CONFIG.lootdrop.bigChallengeChance, CONFIG.lootdrop.smallChallengeChance, 100 - (CONFIG.lootdrop.bigChallengeChance + CONFIG.lootdrop.smallChallengeChance))
+        )
             ?.invoke(location.clone().add(config.mobSpawnLocation.toBukkitLocation()))
         announceDrop(location, players)
     }

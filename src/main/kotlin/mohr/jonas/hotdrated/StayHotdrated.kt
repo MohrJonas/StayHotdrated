@@ -1,11 +1,10 @@
 package mohr.jonas.hotdrated
 
 import com.jeff_media.customblockdata.CustomBlockData
+import kotlinx.serialization.json.Json
+import mohr.jonas.hotdrated.data.PluginConfig
 import mohr.jonas.hotdrated.db.DataManager
-import mohr.jonas.hotdrated.managers.ExperienceManager
-import mohr.jonas.hotdrated.managers.LootdropManager
-import mohr.jonas.hotdrated.managers.TemperatureManager
-import mohr.jonas.hotdrated.managers.ThirstManager
+import mohr.jonas.hotdrated.managers.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
@@ -15,6 +14,7 @@ import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.exposed.sql.Database
 import java.io.File
+import java.nio.file.Files
 import java.util.logging.Level
 import kotlin.properties.Delegates
 import kotlin.time.Duration.Companion.seconds
@@ -30,6 +30,12 @@ class StayHotdrated : JavaPlugin(), Listener {
         println("Enabled")
         logger.level = Level.ALL
         PLUGIN = this
+        val configPath = this.dataFolder.toPath().resolve("config.json")
+        if (!Files.exists(configPath))
+            CONFIG = PluginConfig()
+        else
+            CONFIG = Json.decodeFromString(Files.readString(configPath))
+        println(CONFIG)
         //TODO switch later in production
         Database.connect("jdbc:sqlite:${File("database.db").absolutePath}", "org.sqlite.JDBC")
         CustomBlockData.registerListener(this)
@@ -39,6 +45,9 @@ class StayHotdrated : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(ThirstManager, this)
         server.pluginManager.registerEvents(LootdropManager, this)
         server.pluginManager.registerEvents(ExperienceManager, this)
+        server.pluginManager.registerEvents(RespawnManager, this)
+        server.pluginManager.registerEvents(BountyManager, this)
+        server.pluginManager.registerEvents(CurrencyManager, this)
         schedulerId =
                 Bukkit.getScheduler()
                         .scheduleSyncRepeatingTask(
@@ -90,7 +99,7 @@ class StayHotdrated : JavaPlugin(), Listener {
                                                         player.applyHyperthermia()
                                                     }
                                                 }
-                                                val thirst = ThirstManager.getPlayerThirst(player)
+                                                val thirst = DataManager.thirst.getPlayerThirst(player.uniqueId)
                                                 if (thirst == 0.0) {
                                                     player.showTitle(
                                                         Title.title(
@@ -113,15 +122,17 @@ class StayHotdrated : JavaPlugin(), Listener {
     }
 
     override fun onDisable() {
+        println("Disabled")
         Bukkit.getScheduler().cancelTask(schedulerId)
         DataManager.currency.commitToDB()
         DataManager.temperature.commitToDB()
         DataManager.thirst.commitToDB()
-        println("Disabled")
+        DataManager.bounty.commitToDB()
     }
 
     companion object {
         lateinit var PLUGIN: StayHotdrated
+        lateinit var CONFIG: PluginConfig
     }
 }
 
