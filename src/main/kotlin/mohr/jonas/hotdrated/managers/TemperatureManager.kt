@@ -1,8 +1,8 @@
 package mohr.jonas.hotdrated.managers
 
-import io.github.reactivecircus.cache4k.Cache
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.StayHotdrated
+import mohr.jonas.hotdrated.StayHotdrated.Companion.CONFIG
 import mohr.jonas.hotdrated.data.temperature.BiomeData
 import mohr.jonas.hotdrated.data.temperature.TemperatureReading
 import mohr.jonas.hotdrated.db.DataManager
@@ -14,7 +14,6 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
-import java.util.*
 
 object TemperatureManager : Listener {
 
@@ -37,12 +36,13 @@ object TemperatureManager : Listener {
 
     fun getPlayerTemperature(player: Player): TemperatureReading {
         DataManager.temperature.setPlayerMoveStacks(player.uniqueId, (DataManager.temperature.getPlayerMoveStacks(player.uniqueId) - 20.0).coerceAtLeast(0.0))
-        val baseTemperature = player.getBaseTemperature()
-        val waterTemperature = if (player.isInWater) baseTemperature - baseTemperature / 4.0 else baseTemperature
-        val movementTemperature = waterTemperature + DataManager.temperature.getPlayerMoveStacks(player.uniqueId).mapToRange(0.0..200.0, 0.0..15.0)
-        val weatherTemperature = if (player.isInRain) movementTemperature - movementTemperature / 8.0 else movementTemperature
-        val blockTemperature = waterTemperature + player.calculateBlockTemperatureOffset()
-        val armorTemperature = blockTemperature + player.calculateArmorTemperatureOffset()
+        val baseTemperature = player.getBaseTemperature() * CONFIG.temperature.baseMultiplier
+        val waterTemperature = if (player.isInWater) baseTemperature - baseTemperature / (4.0 * CONFIG.temperature.waterMultiplier) else baseTemperature
+        val movementTemperature =
+            waterTemperature + (DataManager.temperature.getPlayerMoveStacks(player.uniqueId).mapToRange(0.0..200.0, 0.0..15.0) * CONFIG.temperature.movementMultiplier)
+        val weatherTemperature = if (player.isInRain) movementTemperature - movementTemperature / (8.0 * CONFIG.temperature.weatherMultiplier) else movementTemperature
+        val blockTemperature = waterTemperature + player.calculateBlockTemperatureOffset() * CONFIG.temperature.blockMultiplier
+        val armorTemperature = blockTemperature + player.calculateArmorTemperatureOffset() * CONFIG.temperature.armorMultiplier
         return TemperatureReading(baseTemperature, waterTemperature, movementTemperature, weatherTemperature, blockTemperature, armorTemperature)
     }
 
@@ -62,12 +62,12 @@ object TemperatureManager : Listener {
 
     private fun Player.calculateArmorTemperatureOffset(): Double {
         fun getItemOffset(material: Material?) = when (material) {
-            Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE, Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS -> -2.5
-            Material.GOLDEN_HELMET, Material.GOLDEN_CHESTPLATE, Material.GOLDEN_LEGGINGS, Material.GOLDEN_BOOTS -> 3.75
-            Material.LEATHER_HELMET, Material.LEATHER_CHESTPLATE, Material.LEATHER_LEGGINGS, Material.LEATHER_BOOTS -> 2.5
-            Material.IRON_HELMET, Material.IRON_CHESTPLATE, Material.IRON_LEGGINGS, Material.IRON_BOOTS -> -3.75
-            Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS, Material.NETHERITE_BOOTS -> -1.25
-            Material.CHAINMAIL_HELMET, Material.CHAINMAIL_CHESTPLATE, Material.CHAINMAIL_LEGGINGS, Material.CHAINMAIL_BOOTS -> 1.25
+            Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE, Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS -> CONFIG.temperature.diamondAddend
+            Material.GOLDEN_HELMET, Material.GOLDEN_CHESTPLATE, Material.GOLDEN_LEGGINGS, Material.GOLDEN_BOOTS -> CONFIG.temperature.goldAddend
+            Material.LEATHER_HELMET, Material.LEATHER_CHESTPLATE, Material.LEATHER_LEGGINGS, Material.LEATHER_BOOTS -> CONFIG.temperature.leatherAddend
+            Material.IRON_HELMET, Material.IRON_CHESTPLATE, Material.IRON_LEGGINGS, Material.IRON_BOOTS -> CONFIG.temperature.ironAddend
+            Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS, Material.NETHERITE_BOOTS -> CONFIG.temperature.netheriteAddend
+            Material.CHAINMAIL_HELMET, Material.CHAINMAIL_CHESTPLATE, Material.CHAINMAIL_LEGGINGS, Material.CHAINMAIL_BOOTS -> CONFIG.temperature.chainmailAddend
             else -> 0.0
         }
         return arrayOf(

@@ -1,6 +1,6 @@
 package mohr.jonas.hotdrated
 
-import io.github.reactivecircus.cache4k.Cache
+import mohr.jonas.hotdrated.StayHotdrated.Companion.CONFIG
 import mohr.jonas.hotdrated.data.temperature.TemperatureReading
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -51,7 +51,7 @@ fun Player.applyThirst() {
     )
 }
 
-fun Double.isAcceptableTemperature() = this in 5.0..30.0
+fun Double.isAcceptableTemperature() = this in CONFIG.temperature.minAcceptableTemperature..CONFIG.temperature.maxAcceptableTemperature
 
 fun Player.displayTemperature(finalTemp: Double, reading: TemperatureReading) {
     val icons = arrayOf("🌡", "🌊", "🪶", "☔", "🔥", "🎽")
