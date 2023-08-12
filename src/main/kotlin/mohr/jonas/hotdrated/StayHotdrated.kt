@@ -31,15 +31,13 @@ class StayHotdrated : JavaPlugin(), Listener {
         logger.level = Level.ALL
         PLUGIN = this
         val configPath = this.dataFolder.toPath().resolve("config.json")
-        if (!Files.exists(configPath))
-            CONFIG = PluginConfig()
+        CONFIG = if (!Files.exists(configPath))
+            PluginConfig()
         else
-            CONFIG = Json.decodeFromString(Files.readString(configPath))
-        println(CONFIG)
+            Json.decodeFromString(Files.readString(configPath))
         //TODO switch later in production
         Database.connect("jdbc:sqlite:${File("database.db").absolutePath}", "org.sqlite.JDBC")
         CustomBlockData.registerListener(this)
-        DataManager.developmentLevel.recalculate(this)
         server.pluginManager.registerEvents(this, this)
         server.pluginManager.registerEvents(TemperatureManager, this)
         server.pluginManager.registerEvents(ThirstManager, this)
@@ -48,6 +46,7 @@ class StayHotdrated : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(RespawnManager, this)
         server.pluginManager.registerEvents(BountyManager, this)
         server.pluginManager.registerEvents(CurrencyManager, this)
+        DataManager.developmentLevel.set(DataManager.developmentLevel.recalculate(this))
         schedulerId =
                 Bukkit.getScheduler()
                         .scheduleSyncRepeatingTask(

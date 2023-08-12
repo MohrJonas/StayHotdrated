@@ -84,11 +84,22 @@ data class MobConfig(
 )
 
 @Serializable
+data class DevelopmentLevelConfig(
+    val playerKillsMultiplier: Double = 1.0,
+    val moneySpentMultiplier: Double = 1.0,
+    val hostileKillsMultiplier: Double = 1.0,
+    val pickaxeUseMultiplier: Double = 1.0,
+    val craftingMultiplier: Double = 1.0,
+    val playtimeMultiplier: Double = 1.0
+)
+
+@Serializable
 data class PluginConfig(
     val xp: XpConfig = XpConfig(),
     val lootdrop: LootdropConfig = LootdropConfig(),
     val respawn: RespawnConfig = RespawnConfig(),
     val temperature: TemperatureConfig = TemperatureConfig(),
     val mob: MobConfig = MobConfig(),
-    val thirst:ThirstConfig = ThirstConfig()
+    val thirst: ThirstConfig = ThirstConfig(),
+    val development: DevelopmentLevelConfig = DevelopmentLevelConfig()
 )
