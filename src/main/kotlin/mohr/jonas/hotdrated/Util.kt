@@ -58,13 +58,20 @@ fun Player.displayTemperature(finalTemp: Double, reading: TemperatureReading) {
     val component =
         (if (finalTemp.isAcceptableTemperature()) Component.text("☀ ").color(NamedTextColor.YELLOW) else Component.text("☃ ").color(NamedTextColor.AQUA))
             .append(Component.text("${finalTemp.roundToInt()}°C (").color(NamedTextColor.WHITE)).append(
-        baseComponent(icons[0], reading.baseTemperature).color(NamedTextColor.RED)).append(
-        baseComponent(icons[1], reading.waterTemperature).color(NamedTextColor.YELLOW)).append(
-        baseComponent(icons[2], reading.movementTemperature).color(NamedTextColor.AQUA)).append(
-        baseComponent(icons[3], reading.weatherTemperature).color(NamedTextColor.GREEN)).append(
-        baseComponent(icons[4], reading.blockTemperature).color(NamedTextColor.LIGHT_PURPLE)).append(
-        baseComponent(icons[5], reading.armorTemperature).color(NamedTextColor.GOLD)).append(
-        Component.text(" )").color(NamedTextColor.WHITE))
+                baseComponent(icons[0], reading.baseTemperature).color(NamedTextColor.RED)
+            ).append(
+                baseComponent(icons[1], reading.waterTemperature).color(NamedTextColor.YELLOW)
+            ).append(
+                baseComponent(icons[2], reading.movementTemperature).color(NamedTextColor.AQUA)
+            ).append(
+                baseComponent(icons[3], reading.weatherTemperature).color(NamedTextColor.GREEN)
+            ).append(
+                baseComponent(icons[4], reading.blockTemperature).color(NamedTextColor.LIGHT_PURPLE)
+            ).append(
+                baseComponent(icons[5], reading.armorTemperature).color(NamedTextColor.GOLD)
+            ).append(
+                Component.text(" )").color(NamedTextColor.WHITE)
+            )
     this.sendActionBar(
         component
     )
@@ -86,7 +93,7 @@ fun <T> Random.choice(choices: List<T>) = choices[this.nextInt(0, choices.size)]
 fun <T> Random.weightedChoice(choices: List<T>, weights: List<Int>): T {
     if (weights.sum() != 100)
         throw UnsupportedOperationException("Choice weights ($weights) don't add up to 100%")
-    if(choices.size != weights.size)
+    if (choices.size != weights.size)
         throw UnsupportedOperationException("Size of choices != Size of weights")
     val random = nextInt(0, 101)
     for (i in choices.indices) {
@@ -95,7 +102,7 @@ fun <T> Random.weightedChoice(choices: List<T>, weights: List<Int>): T {
             val sum = weights.subList(0, i).sum()
             sum..<sum + weights[i]
         }
-        if(random in range)
+        if (random in range)
             return choices[i]
     }
     throw IllegalStateException("Weighted choice was unable to come to a result")

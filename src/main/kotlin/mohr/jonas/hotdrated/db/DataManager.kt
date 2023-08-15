@@ -12,7 +12,7 @@ object DataManager {
     init {
         transaction {
             addLogger(StdOutSqlLogger)
-            SchemaUtils.create(DevelopmentLevelTable, PlayerTemperatureTable, PlayerThirstTable, TransactionTable, BountyTable)
+            SchemaUtils.create(DevelopmentLevelTable, PlayerTemperatureTable, PlayerThirstTable, TransactionTable, BountyTable, EffectBlockTable)
         }
     }
 
@@ -21,5 +21,5 @@ object DataManager {
     val thirst = PlayerThirst(this)
     val temperature = PlayerTemperature(this)
     val bounty = Bounty(this)
-
+    val effectBlock = EffectBlock(this)
 }

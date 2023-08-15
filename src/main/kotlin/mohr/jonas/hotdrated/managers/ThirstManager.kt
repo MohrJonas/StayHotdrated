@@ -48,6 +48,9 @@ object ThirstManager : Listener {
     @EventHandler
     fun onWaterDrink(event: PlayerItemConsumeEvent) {
         if (event.item.type != Material.POTION) return
-        DataManager.thirst.setPlayerThirst(event.player.uniqueId, (DataManager.thirst.getPlayerThirst(event.player.uniqueId) + 6.0 / CONFIG.thirst.waterDivisor).coerceAtMost(20.0))
+        DataManager.thirst.setPlayerThirst(
+            event.player.uniqueId,
+            (DataManager.thirst.getPlayerThirst(event.player.uniqueId) + 6.0 / CONFIG.thirst.waterDivisor).coerceAtMost(20.0)
+        )
     }
 }

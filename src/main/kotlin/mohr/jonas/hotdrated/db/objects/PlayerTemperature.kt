@@ -31,7 +31,7 @@ class PlayerTemperature(manager: DataManager) : DataManagerObject(manager) {
         }.temperature
     }
 
-    fun setPlayerTemperature(uuid: UUID, temperature: Double)  {
+    fun setPlayerTemperature(uuid: UUID, temperature: Double) {
         cache.put(uuid, CacheEntry(temperature, getPlayerMoveStacks(uuid)))
     }
 

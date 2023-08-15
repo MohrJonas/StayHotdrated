@@ -46,78 +46,79 @@ class StayHotdrated : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(RespawnManager, this)
         server.pluginManager.registerEvents(BountyManager, this)
         server.pluginManager.registerEvents(CurrencyManager, this)
+        server.pluginManager.registerEvents(EffectBlockManager, this)
         DataManager.developmentLevel.set(DataManager.developmentLevel.recalculate(this))
         schedulerId =
-                Bukkit.getScheduler()
-                        .scheduleSyncRepeatingTask(
-                                this,
-                                {
-                                    server.onlinePlayers
-                                            .filter {
-                                                it.gameMode.let {
-                                                    it != GameMode.CREATIVE &&
-                                                            it != GameMode.SPECTATOR
-                                                }
-                                            }
-                                            .forEach { player ->
-                                                val currentTemperature = DataManager.temperature.getPlayerTemperature(player.uniqueId)
-                                                val targetTemperature = TemperatureManager.getPlayerTemperature(player)
-                                                val newTemperature = if (currentTemperature > targetTemperature.armorTemperature)
-                                                    (currentTemperature - 3.0).coerceAtLeast(targetTemperature.armorTemperature) else if (currentTemperature < targetTemperature.armorTemperature)
-                                                    (currentTemperature + 3.0).coerceAtMost(targetTemperature.armorTemperature) else currentTemperature
-                                                DataManager.temperature.setPlayerTemperature(player.uniqueId, newTemperature)
-                                                println(
-                                                    "${player.name}@$newTemperature => ${newTemperature.isAcceptableTemperature()}"
-                                                )
-                                                when (newTemperature) {
-                                                    in -100.0..<5.0 -> {
-                                                        println(
-                                                                "Applying hypothermia to ${player.name}"
-                                                        )
-                                                        player.showTitle(
-                                                            Title.title(
-                                                                Component.text("It's really cold here").color(NamedTextColor.AQUA),
-                                                                Component.empty(),
-                                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                            )
-                                                        )
-                                                        player.applyHypothermia()
-                                                    }
+            Bukkit.getScheduler()
+                .scheduleSyncRepeatingTask(
+                    this,
+                    {
+                        server.onlinePlayers
+                            .filter {
+                                it.gameMode.let {
+                                    it != GameMode.CREATIVE &&
+                                            it != GameMode.SPECTATOR
+                                }
+                            }
+                            .forEach { player ->
+                                val currentTemperature = DataManager.temperature.getPlayerTemperature(player.uniqueId)
+                                val targetTemperature = TemperatureManager.getPlayerTemperature(player)
+                                val newTemperature = if (currentTemperature > targetTemperature.armorTemperature)
+                                    (currentTemperature - 3.0).coerceAtLeast(targetTemperature.armorTemperature) else if (currentTemperature < targetTemperature.armorTemperature)
+                                    (currentTemperature + 3.0).coerceAtMost(targetTemperature.armorTemperature) else currentTemperature
+                                DataManager.temperature.setPlayerTemperature(player.uniqueId, newTemperature)
+                                println(
+                                    "${player.name}@$newTemperature => ${newTemperature.isAcceptableTemperature()}"
+                                )
+                                when (newTemperature) {
+                                    in -100.0..<5.0 -> {
+                                        println(
+                                            "Applying hypothermia to ${player.name}"
+                                        )
+                                        player.showTitle(
+                                            Title.title(
+                                                Component.text("It's really cold here").color(NamedTextColor.AQUA),
+                                                Component.empty(),
+                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
+                                            )
+                                        )
+                                        player.applyHypothermia()
+                                    }
 
-                                                    in 30.1..100.0 -> {
-                                                        println(
-                                                                "Applying hyperthermia to ${player.name}"
-                                                        )
-                                                        player.showTitle(
-                                                            Title.title(
-                                                                Component.text("It's really hot here").color(NamedTextColor.RED),
-                                                                Component.empty(),
-                                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                            )
-                                                        )
-                                                        player.applyHyperthermia()
-                                                    }
-                                                }
-                                                val thirst = DataManager.thirst.getPlayerThirst(player.uniqueId)
-                                                if (thirst == 0.0) {
-                                                    player.showTitle(
-                                                        Title.title(
-                                                            Component.text("I'm really thirsty").color(NamedTextColor.BLUE),
-                                                            Component.empty(),
-                                                            Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                        )
-                                                    )
-                                                    player.applyThirst()
-                                                }
-                                                if (showTemperature)
-                                                    player.displayTemperature(newTemperature, targetTemperature)
-                                                else player.displayWater(thirst)
-                                                showTemperature = showTemperature.not()
-                                            }
-                                },
-                            3.seconds.inTicks.toLong(),
-                            3.seconds.inTicks.toLong()
-                        )
+                                    in 30.1..100.0 -> {
+                                        println(
+                                            "Applying hyperthermia to ${player.name}"
+                                        )
+                                        player.showTitle(
+                                            Title.title(
+                                                Component.text("It's really hot here").color(NamedTextColor.RED),
+                                                Component.empty(),
+                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
+                                            )
+                                        )
+                                        player.applyHyperthermia()
+                                    }
+                                }
+                                val thirst = DataManager.thirst.getPlayerThirst(player.uniqueId)
+                                if (thirst == 0.0) {
+                                    player.showTitle(
+                                        Title.title(
+                                            Component.text("I'm really thirsty").color(NamedTextColor.BLUE),
+                                            Component.empty(),
+                                            Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
+                                        )
+                                    )
+                                    player.applyThirst()
+                                }
+                                if (showTemperature)
+                                    player.displayTemperature(newTemperature, targetTemperature)
+                                else player.displayWater(thirst)
+                                showTemperature = showTemperature.not()
+                            }
+                    },
+                    3.seconds.inTicks.toLong(),
+                    3.seconds.inTicks.toLong()
+                )
     }
 
     override fun onDisable() {
@@ -127,6 +128,7 @@ class StayHotdrated : JavaPlugin(), Listener {
         DataManager.temperature.commitToDB()
         DataManager.thirst.commitToDB()
         DataManager.bounty.commitToDB()
+        DataManager.effectBlock.commitToDB()
     }
 
     companion object {

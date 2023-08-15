@@ -2,7 +2,7 @@ package mohr.jonas.hotdrated.db.tables
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
-import java.util.UUID
+import java.util.*
 
 object PlayerTemperatureTable : IntIdTable("PlayerTemperatures") {
 

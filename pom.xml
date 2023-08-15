@@ -97,6 +97,10 @@
                             <pattern>com.jeff_media.customblockdata</pattern>
                             <shadedPattern>mohr.jonas.customblockdata</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.jeff_media.morepersistentdatatypes</pattern>
+                            <shadedPattern>mohr.jonas.morepersistentdatatypes</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
             </plugin>
@@ -153,11 +157,6 @@
             <artifactId>exposed-jdbc</artifactId>
             <version>0.40.1</version>
         </dependency>
-        <dependency>
-            <groupId>dev.krud</groupId>
-            <artifactId>shapeshift</artifactId>
-            <version>0.8.0</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
         <!-- Maybe swap to proper db later -->
         <dependency>
@@ -180,6 +179,12 @@
             <groupId>io.github.reactivecircus.cache4k</groupId>
             <artifactId>cache4k-jvm</artifactId>
             <version>0.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jeff_media</groupId>
+            <artifactId>MorePersistentDataTypes</artifactId>
+            <version>2.4.0</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

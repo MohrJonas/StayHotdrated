@@ -11,7 +11,7 @@ import org.bukkit.potion.PotionEffectType
 object MobCreator {
 
     fun spawnMob(location: Location, entity: EntityType, generator: ((entity: LivingEntity) -> Unit)? = null) {
-        location.world.spawnEntity(location, entity, SpawnReason.CUSTOM) {entity ->
+        location.world.spawnEntity(location, entity, SpawnReason.CUSTOM) { entity ->
             entity as LivingEntity
             entity.addPotionEffects(getPotionEffectsForDevelopmentLevel())
             generator?.invoke(entity)
@@ -24,6 +24,7 @@ object MobCreator {
             PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Int.MAX_VALUE, 2, false, false),
             PotionEffect(PotionEffectType.INCREASE_DAMAGE, Int.MAX_VALUE, 1, false, false, false)
         )
+
         in 700.0..<1000.0 -> listOf(
             PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Int.MAX_VALUE, 3, false, false, false),
             PotionEffect(PotionEffectType.HEALTH_BOOST, Int.MAX_VALUE, 4, false, false, false),
