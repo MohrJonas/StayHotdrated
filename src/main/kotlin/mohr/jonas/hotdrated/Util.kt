@@ -107,3 +107,5 @@ fun <T> Random.weightedChoice(choices: List<T>, weights: List<Int>): T {
     }
     throw IllegalStateException("Weighted choice was unable to come to a result")
 }
+
+fun String.toValidKey() = this.lowercase().replace(Regex("\\W"), "_")

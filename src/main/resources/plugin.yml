@@ -5,3 +5,5 @@ author: MohrJonas
 version: 1.0-SNAPSHOT
 main: mohr.jonas.hotdrated.StayHotdrated
 load: POSTWORLD
+depend:
+  - "Slimefun"

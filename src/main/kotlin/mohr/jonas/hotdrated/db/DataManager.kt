@@ -22,4 +22,12 @@ object DataManager {
     val temperature = PlayerTemperature(this)
     val bounty = Bounty(this)
     val effectBlock = EffectBlock(this)
+
+    fun commitData() {
+        currency.commitToDB()
+        temperature.commitToDB()
+        thirst.commitToDB()
+        bounty.commitToDB()
+        effectBlock.commitToDB()
+    }
 }
