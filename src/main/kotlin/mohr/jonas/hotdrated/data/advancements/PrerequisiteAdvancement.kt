@@ -6,9 +6,9 @@ import com.fren_gor.ultimateAdvancementAPI.advancement.RootAdvancement
 import com.fren_gor.ultimateAdvancementAPI.advancement.display.AdvancementDisplay
 import com.fren_gor.ultimateAdvancementAPI.advancement.display.AdvancementFrameType
 import com.fren_gor.ultimateAdvancementAPI.database.TeamProgression
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
+import org.bukkit.inventory.ItemStack
 
 /*
 * A PrerequisiteAdvancement requires its parent to be completed before it becomes visible and / or completable
@@ -20,10 +20,10 @@ abstract class PrerequisiteAdvancement<T : Event>(
     y: Int,
     parent: Advancement,
     eventType: Class<T>,
-    frame: AdvancementFrameType = AdvancementFrameType.TASK,
-    description: List<String> = emptyList(),
-    icon: Material = Material.OAK_LOG,
-    maxProgression: Int = 1
+    frame: AdvancementFrameType,
+    description: List<String>,
+    icon: ItemStack,
+    maxProgression: Int
 ) : BaseAdvancement(key, AdvancementDisplay(icon, title, frame, true, true, x.toFloat(), y.toFloat(), description), parent, maxProgression) {
 
     init {

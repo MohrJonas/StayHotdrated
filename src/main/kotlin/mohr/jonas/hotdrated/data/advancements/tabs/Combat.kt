@@ -5,13 +5,17 @@ import mohr.jonas.hotdrated.data.advancements.craftAdvancement
 import mohr.jonas.hotdrated.data.advancements.root
 import mohr.jonas.hotdrated.data.advancements.tab
 import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
 
 val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
-    val root = root("Combat", Material.IRON_SWORD, 0, 0, "You'll need a way to defend yourself", "textures/block/stone.png")
+    val root = root(
+        name = "Combat", icon = Material.IRON_SWORD, x = 0, y = 0, description = "You'll need a way to defend yourself", background = "textures/block/stone.png"
+    )
+    @Suppress("SpellCheckingInspection")
     craftAdvancement(
         name = "Blocker McBlockface",
         description = "Wouldn't it be nice to block attacks?",
-        icon = Material.SHIELD,
+        icon = ItemStack(Material.SHIELD),
         x = 1,
         y = 0,
         resultingItem = Material.SHIELD
@@ -20,7 +24,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
         parent = root,
         name = "Sniper elite",
         description = "Headshot!",
-        icon = Material.BOW,
+        icon = ItemStack(Material.BOW),
         x = 1,
         y = 1,
         resultingItem = Material.BOW
@@ -29,7 +33,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
         parent = root,
         name = "Rip and tear (I)",
         description = "Like a knife through butter",
-        icon = Material.IRON_SWORD,
+        icon = ItemStack(Material.IRON_SWORD),
         x = 1,
         y = 2,
         resultingItem = Material.IRON_SWORD
@@ -37,7 +41,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
     craftAdvancement(
         name = "Rip and tear (II)",
         description = "Like a knife through butter",
-        icon = Material.GOLDEN_SWORD,
+        icon = ItemStack(Material.GOLDEN_SWORD),
         x = 2,
         y = 2,
         resultingItem = Material.GOLDEN_SWORD
@@ -45,7 +49,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
     craftAdvancement(
         name = "Rip and tear (III)",
         description = "Like a knife through butter",
-        icon = Material.DIAMOND_SWORD,
+        icon = ItemStack(Material.DIAMOND_SWORD),
         x = 3,
         y = 2,
         resultingItem = Material.DIAMOND_SWORD
@@ -53,7 +57,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
     craftAdvancement(
         name = "Rip and tear (IV)",
         description = "Like a knife through butter",
-        icon = Material.NETHERITE_SWORD,
+        icon = ItemStack(Material.NETHERITE_SWORD),
         x = 4,
         y = 2,
         resultingItem = Material.NETHERITE_SWORD
@@ -62,7 +66,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
         parent = bow,
         name = "Shine bright like a diamond",
         description = "Brighter that a torch",
-        icon = Material.SPECTRAL_ARROW,
+        icon = ItemStack(Material.SPECTRAL_ARROW),
         x = 2,
         y = 1,
         resultingItem = Material.SPECTRAL_ARROW
@@ -70,7 +74,7 @@ val CombatAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Combat") {
     craftAdvancement(
         name = "Splash",
         description = "Like strapping a potion to an arrow",
-        icon = Material.TIPPED_ARROW,
+        icon = ItemStack(Material.TIPPED_ARROW),
         x = 3,
         y = 1,
         resultingItem = Material.TIPPED_ARROW

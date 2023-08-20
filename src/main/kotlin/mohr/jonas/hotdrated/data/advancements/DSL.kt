@@ -6,8 +6,11 @@ import com.fren_gor.ultimateAdvancementAPI.advancement.Advancement
 import com.fren_gor.ultimateAdvancementAPI.advancement.RootAdvancement
 import com.fren_gor.ultimateAdvancementAPI.advancement.display.AdvancementDisplay
 import com.fren_gor.ultimateAdvancementAPI.advancement.display.AdvancementFrameType
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
+import io.github.thebusybiscuit.slimefun4.api.researches.Research
 import mohr.jonas.hotdrated.toValidKey
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.block.BlockBreakEvent
@@ -50,14 +53,17 @@ fun Tab.root(name: String, icon: Material, x: Int, y: Int, description: String, 
  * @param frameType Frame used for the advancement, defaults to task,
  * @param maxProgression The amount of times the action has to be done
  * @param acceptedBlocks List of blocks that, when broken, increase the progress
- * @param giveReward Function called when the advancement is completed. Also have a look at:
+ * @param giveReward Function called when the advancement is completed. Multiple giveReward lambdas can be added (i.e. randomItemReward(...) + fixedItemReward(...) + ...)
  * @see Tab.randomItemReward
  * @see Tab.fixedItemReward
+ * @see Tab.randomSlimefunItemReward
+ * @see Tab.fixedSlimefunItemReward
+ * @see Tab.slimefunResearch
  */
 fun Tab.mineAdvancement(
     parent: Advancement = this.advancements.lastOrNull() ?: requireNotNull(this.root),
     name: String,
-    icon: Material,
+    icon: ItemStack,
     x: Int,
     y: Int,
     description: String,
@@ -83,14 +89,17 @@ fun Tab.mineAdvancement(
  * @param frameType Frame used for the advancement, defaults to task,
  * @param maxProgression The amount of times the action has to be done
  * @param resultingItem Item that has to be the result from the crafting event to count towards progression
- * @param giveReward Function called when the advancement is completed. Also have a look at:
+ * @param giveReward Function called when the advancement is completed. Multiple giveReward lambdas can be added (i.e. randomItemReward(...) + fixedItemReward(...) + ...)
  * @see Tab.randomItemReward
  * @see Tab.fixedItemReward
+ * @see Tab.randomSlimefunItemReward
+ * @see Tab.fixedSlimefunItemReward
+ * @see Tab.slimefunResearch
  */
 fun Tab.craftAdvancement(
     parent: Advancement = this.advancements.lastOrNull() ?: requireNotNull(this.root),
     name: String,
-    icon: Material,
+    icon: ItemStack,
     x: Int,
     y: Int,
     description: String,
@@ -125,14 +134,17 @@ fun Tab.craftAdvancement(
  * @param frameType Frame used for the advancement, defaults to task,
  * @param maxProgression The amount of times the action has to be done
  * @param acceptedItems Items that, on pick up, count towards progression
- * @param giveReward Function called when the advancement is completed. Also have a look at:
+ * @param giveReward Function called when the advancement is completed. Multiple giveReward lambdas can be added (i.e. randomItemReward(...) + fixedItemReward(...) + ...)
  * @see Tab.randomItemReward
  * @see Tab.fixedItemReward
+ * @see Tab.randomSlimefunItemReward
+ * @see Tab.fixedSlimefunItemReward
+ * @see Tab.slimefunResearch
  */
 fun Tab.pickupAdvancement(
     parent: Advancement = this.advancements.lastOrNull() ?: requireNotNull(this.root),
     name: String,
-    icon: Material,
+    icon: ItemStack,
     x: Int,
     y: Int,
     description: String,
@@ -168,14 +180,17 @@ fun Tab.pickupAdvancement(
  * @param frameType Frame used for the advancement, defaults to task,
  * @param maxProgression The amount of times the action has to be done
  * @param onEvent Lambda called when the specified event occurs
- * @param giveReward Function called when the advancement is completed. Also have a look at:
+ * @param giveReward Function called when the advancement is completed. Multiple giveReward lambdas can be added (i.e. randomItemReward(...) + fixedItemReward(...) + ...)
  * @see Tab.randomItemReward
  * @see Tab.fixedItemReward
+ * @see Tab.randomSlimefunItemReward
+ * @see Tab.fixedSlimefunItemReward
+ * @see Tab.slimefunResearch
  */
 inline fun <reified T : Event> Tab.advancement(
     parent: Advancement = this.advancements.lastOrNull() ?: this.root,
     name: String,
-    icon: Material,
+    icon: ItemStack,
     x: Int,
     y: Int,
     description: String,
@@ -215,6 +230,68 @@ fun Tab.randomItemReward(type: Material, min: Int, max: Int) =
     { it: Player -> it.inventory.addItem(ItemStack(type, ThreadLocalRandom.current().nextInt(min, max + 1))).drop() }
 
 /**
+ * Return a lambda, giving the player a Slimefun Item a certain amount of times. Can be passed to giveReward
+ * @param id ID of SlimefunItem to give
+ * @param amount Size of stack to give
+ * */
+fun Tab.fixedSlimefunItemReward(id: String, amount: Int) = { it: Player -> it.inventory.addItem(ItemStack(SlimefunItem.getById(id)!!.item.type, amount)).drop() }
+
+/**
+ * Return a lambda, giving the player an ItemStack with the given Slimefun Item and a random amount upon invocation. Can be passed to giveReward
+ * @param id ID of SlimefunItem to give
+ * @param min Min size of stack to give
+ * @param max Max size of stack to give
+ * */
+fun Tab.randomSlimefunItemReward(id: String, min: Int, max: Int) =
+    { it: Player -> it.inventory.addItem(ItemStack(SlimefunItem.getById(id)!!.item.type, ThreadLocalRandom.current().nextInt(min, max + 1))).drop() }
+
+/**
+ * Return a lambda, giving the player the Slimefun research. Can be passed to giveReward
+ * @param key Key of the research to give
+ * */
+fun Tab.slimefunResearch(key: NamespacedKey) = { it: Player -> Research.getResearch(key).orElseThrow().unlock(it, true).drop() }
+
+/**
+ * Get an x value, so this advancement will be placed to the right of the previous.
+ * */
+fun Tab.right() = ((this.advancements.lastOrNull() ?: this.root).display.x + 1).toInt()
+
+/**
+ * Get an x value, so this advancement will be placed to the left of the previous.
+ * */
+fun Tab.left() = ((this.advancements.lastOrNull() ?: this.root).display.x - 1).toInt()
+
+/**
+ * Get a y value, so this advancement will be placed above the previous.
+ * */
+fun Tab.up() = ((this.advancements.lastOrNull() ?: this.root).display.y - 1).toInt()
+
+/**
+ * Get a y value, so this advancement will be placed below the previous.
+ * */
+fun Tab.down() = ((this.advancements.lastOrNull() ?: this.root).display.y + 1).toInt()
+
+/**
+ * Get an x value, so this advancement will be placed to the right of given one.
+ * */
+fun Tab.rightOf(advancement: Advancement) = (advancement.display.x + 1).toInt()
+
+/**
+ * Get an x value, so this advancement will be placed to the left of given one.
+ * */
+fun Tab.leftOf(advancement: Advancement) = (advancement.display.x - 1).toInt()
+
+/**
+ * Get a y value, so this advancement will be placed above given one.
+ * */
+fun Tab.aboveOf(advancement: Advancement) = (advancement.display.y - 1).toInt()
+
+/**
+ * Get a y value, so this advancement will be placed below given one.
+ * */
+fun Tab.belowOf(advancement: Advancement) = (advancement.display.y + 1).toInt()
+
+/**
  * Create a new Advancement Tab
  * @param api Api to use. Will most likely be StayHotdrated.ADVANCEMENT_API
  * @param name Name of the tab to create
@@ -229,3 +306,5 @@ fun tab(api: UltimateAdvancementAPI, name: String, init: Tab.() -> Unit): Advanc
 }
 
 private fun Any.drop() = Unit
+
+operator fun ((p: Player) -> Unit).plus(other: (p: Player) -> Unit) = { it: Player -> this(it); other(it) }

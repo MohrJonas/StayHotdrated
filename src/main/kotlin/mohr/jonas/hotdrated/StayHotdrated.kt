@@ -6,8 +6,7 @@ import com.fren_gor.ultimateAdvancementAPI.events.PlayerLoadingCompletedEvent
 import com.jeff_media.customblockdata.CustomBlockData
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.data.PluginConfig
-import mohr.jonas.hotdrated.data.advancements.tabs.CombatAdvancementTab
-import mohr.jonas.hotdrated.data.advancements.tabs.ReunificationAdvancementTab
+import mohr.jonas.hotdrated.data.advancements.Advancements
 import mohr.jonas.hotdrated.db.DataManager
 import mohr.jonas.hotdrated.managers.*
 import org.bukkit.event.EventHandler
@@ -16,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.exposed.sql.Database
 import java.io.File
 import java.nio.file.Files
-
 
 @Suppress("unused")
 class StayHotdrated : JavaPlugin(), Listener {
@@ -43,12 +41,13 @@ class StayHotdrated : JavaPlugin(), Listener {
 
     @EventHandler
     fun onPlayerJoin(e: PlayerLoadingCompletedEvent) {
-        ReunificationAdvancementTab.grantRootAdvancement(e.player)
-        ReunificationAdvancementTab.showTab(e.player)
-        ReunificationAdvancementTab.advancements.forEach { it.grant(e.player) }
-        CombatAdvancementTab.grantRootAdvancement(e.player)
-        CombatAdvancementTab.showTab(e.player)
-        CombatAdvancementTab.advancements.forEach { it.grant(e.player) }
+        Advancements.forEach {
+            it.showTab(e.player)
+            //TODO remove in production
+            it.grantRootAdvancement(e.player)
+            //TODO remove in production
+            it.advancements.forEach { it.grant(e.player) }
+        }
     }
 
     override fun onDisable() {
