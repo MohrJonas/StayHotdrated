@@ -1,0 +1,88 @@
+{
+	"xp": {
+		"mineXpChance": 30,
+		"mineXpAmount": 1,
+		"forageXpChance": 50,
+		"forageXpAmount": 3,
+		"farmXpChance": 25,
+		"farmXpAmount": 3,
+		"monsterKillXpChance": 100,
+		"monsterKillXpAmount": 3,
+		"mobKillXpChance": 100,
+		"mobKillXpAmount": 1,
+		"wageAmount": 180
+	},
+	"lootdrop": {
+		"dropMinDelay": 9600,
+		"dropMaxDelay": 12000,
+		"blockLore": "Lootdrop",
+		"chestOpenXp": 100,
+		"dropRadius": 100,
+		"maxDestruction": 0.0,
+		"minDestruction": 1.0,
+		"garbageChance": 45,
+		"commonChance": 28,
+		"uncommonChance": 12,
+		"rareChance": 8,
+		"epicChance": 4,
+		"legendaryChance": 2,
+		"mysticalChance": 1,
+		"smallChance": 50,
+		"mediumChance": 38,
+		"largeChance": 12,
+		"smallChallengeChance": 60,
+		"bigChallengeChance": 20
+	},
+	"respawn": {
+		"respawnCenter": {
+			"x": 0,
+			"y": 0,
+			"z": 0
+		},
+		"respawnRadius": 100
+	},
+	"temperature": {
+		"baseMultiplier": 1.0,
+		"waterMultiplier": 1.0,
+		"movementMultiplier": 1.0,
+		"weatherMultiplier": 1.0,
+		"blockMultiplier": 1.0,
+		"armorMultiplier": 1.0,
+		"maxAcceptableTemperature": 30.0,
+		"minAcceptableTemperature": 0.0,
+		"leatherAddend": 2.5,
+		"ironAddend": -3.75,
+		"goldAddend": 3.75,
+		"diamondAddend": -2.5,
+		"netheriteAddend": -1.25,
+		"chainmailAddend": 1.25
+	},
+	"thirst": {
+		"blockBreakDivisor": 1.0,
+		"damageDivisor": 1.0,
+		"moveDivisor": 1.0,
+		"waterDivisor": 1.0
+	},
+	"mob": {
+		"powerScale": [
+			{
+				"minPowerLevel": 0,
+				"maxPowerLevel": 100,
+				"effects": [
+					{
+						"key": "minecraft:resistance",
+						"amplifier": 3
+					}
+				]
+			}
+		]
+	},
+	"development": {
+		"playerKillsMultiplier": 1.0,
+		"moneySpentMultiplier": 1.0,
+		"hostileKillsMultiplier": 1.0,
+		"pickaxeUseMultiplier": 1.0,
+		"craftingMultiplier": 1.0,
+		"playtimeMultiplier": 1.0
+	}
+}

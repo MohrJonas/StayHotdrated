@@ -16,6 +16,7 @@ import org.bukkit.entity.Monster
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import kotlin.math.roundToInt
@@ -29,6 +30,17 @@ object ExperienceManager : Listener {
         if (xp == 0) return
         event.player.giveExpLevels((xp + xp * DataManager.developmentLevel.get()).roundToInt())
         event.player.playSound(event.player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 500f, 1f)
+    }
+
+    @EventHandler
+    fun onBlockPlace(event: BlockPlaceEvent) {
+        when (event.block.type) {
+            Material.STONE, Material.DEEPSLATE, Material.OAK_LOG, Material.SPRUCE_LOG, Material.BIRCH_LOG, Material.JUNGLE_LOG, Material.ACACIA_LOG, Material.DARK_OAK_LOG, Material.MANGROVE_LOG, Material.CHERRY_LOG, Material.WARPED_STEM, Material.CRIMSON_STEM, Material.CARROTS, Material.POTATOES, Material.WHEAT, Material.NETHER_WART, Material.BEETROOTS, Material.KELP_PLANT, Material.PUMPKIN, Material.MELON -> {
+                event.player.foodLevel -= 1
+            }
+
+            else -> {}
+        }
     }
 
     @EventHandler

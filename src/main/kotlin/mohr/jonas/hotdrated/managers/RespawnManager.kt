@@ -4,6 +4,7 @@ import mohr.jonas.hotdrated.StayHotdrated
 import mohr.jonas.hotdrated.StayHotdrated.Companion.CONFIG
 import org.bukkit.Location
 import org.bukkit.World
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.event.player.PlayerTeleportEvent
@@ -11,6 +12,7 @@ import kotlin.random.Random
 
 object RespawnManager : Listener {
 
+    @EventHandler
     fun onRespawn(event: PlayerRespawnEvent) {
         if (event.player.bedSpawnLocation != null) return
         val overworld = StayHotdrated.PLUGIN.server.worlds.find { it.environment == World.Environment.NORMAL }!!

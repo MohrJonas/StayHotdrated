@@ -1,45 +1,71 @@
 package mohr.jonas.hotdrated
 
+import com.fren_gor.ultimateAdvancementAPI.AdvancementMain
+import com.fren_gor.ultimateAdvancementAPI.UltimateAdvancementAPI
+import com.fren_gor.ultimateAdvancementAPI.events.PlayerLoadingCompletedEvent
 import com.jeff_media.customblockdata.CustomBlockData
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.data.PluginConfig
+import mohr.jonas.hotdrated.data.advancements.tabs.CombatAdvancementTab
+import mohr.jonas.hotdrated.data.advancements.tabs.ReunificationAdvancementTab
 import mohr.jonas.hotdrated.db.DataManager
 import mohr.jonas.hotdrated.managers.*
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.title.Title
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.exposed.sql.Database
 import java.io.File
 import java.nio.file.Files
-import java.util.logging.Level
-import kotlin.properties.Delegates
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
+
 
 @Suppress("unused")
 class StayHotdrated : JavaPlugin(), Listener {
 
-    private var showTemperature = true
-    private var schedulerId by Delegates.notNull<Int>()
+    private lateinit var main: AdvancementMain
 
     override fun onEnable() {
-        println("Enabled")
-        logger.level = Level.ALL
         PLUGIN = this
-        val configPath = this.dataFolder.toPath().resolve("config.json")
-        if (!Files.exists(configPath))
-            CONFIG = PluginConfig()
-        else
-            CONFIG = Json.decodeFromString(Files.readString(configPath))
-        println(CONFIG)
+        loadConfig()
         //TODO switch later in production
         Database.connect("jdbc:sqlite:${File("database.db").absolutePath}", "org.sqlite.JDBC")
+        //TODO switch to db in production
+        //main.enableSQLite(File("database.db"))
+        registerManagers()
+        DataManager.developmentLevel.set(DataManager.developmentLevel.recalculate(this))
+        main.enableInMemory()
+        ADVANCEMENT_API = UltimateAdvancementAPI.getInstance(this)
+    }
+
+    override fun onLoad() {
+        main = AdvancementMain(this)
+        main.load()
+    }
+
+    @EventHandler
+    fun onPlayerJoin(e: PlayerLoadingCompletedEvent) {
+        ReunificationAdvancementTab.grantRootAdvancement(e.player)
+        ReunificationAdvancementTab.showTab(e.player)
+        ReunificationAdvancementTab.advancements.forEach { it.grant(e.player) }
+        CombatAdvancementTab.grantRootAdvancement(e.player)
+        CombatAdvancementTab.showTab(e.player)
+        CombatAdvancementTab.advancements.forEach { it.grant(e.player) }
+    }
+
+    override fun onDisable() {
+        main.disable()
+        DataManager.commitData()
+    }
+
+    private fun loadConfig() {
+        val configPath = this.dataFolder.toPath().resolve("config.json")
+        CONFIG = if (!Files.exists(configPath))
+            PluginConfig()
+        else
+            Json.decodeFromString(Files.readString(configPath))
+    }
+
+    private fun registerManagers() {
         CustomBlockData.registerListener(this)
-        DataManager.developmentLevel.recalculate(this)
         server.pluginManager.registerEvents(this, this)
         server.pluginManager.registerEvents(TemperatureManager, this)
         server.pluginManager.registerEvents(ThirstManager, this)
@@ -48,91 +74,13 @@ class StayHotdrated : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(RespawnManager, this)
         server.pluginManager.registerEvents(BountyManager, this)
         server.pluginManager.registerEvents(CurrencyManager, this)
-        schedulerId =
-                Bukkit.getScheduler()
-                        .scheduleSyncRepeatingTask(
-                                this,
-                                {
-                                    server.onlinePlayers
-                                            .filter {
-                                                it.gameMode.let {
-                                                    it != GameMode.CREATIVE &&
-                                                            it != GameMode.SPECTATOR
-                                                }
-                                            }
-                                            .forEach { player ->
-                                                val currentTemperature = DataManager.temperature.getPlayerTemperature(player.uniqueId)
-                                                val targetTemperature = TemperatureManager.getPlayerTemperature(player)
-                                                val newTemperature = if (currentTemperature > targetTemperature.armorTemperature)
-                                                    (currentTemperature - 3.0).coerceAtLeast(targetTemperature.armorTemperature) else if (currentTemperature < targetTemperature.armorTemperature)
-                                                    (currentTemperature + 3.0).coerceAtMost(targetTemperature.armorTemperature) else currentTemperature
-                                                DataManager.temperature.setPlayerTemperature(player.uniqueId, newTemperature)
-                                                println(
-                                                    "${player.name}@$newTemperature => ${newTemperature.isAcceptableTemperature()}"
-                                                )
-                                                when (newTemperature) {
-                                                    in -100.0..<5.0 -> {
-                                                        println(
-                                                                "Applying hypothermia to ${player.name}"
-                                                        )
-                                                        player.showTitle(
-                                                            Title.title(
-                                                                Component.text("It's really cold here").color(NamedTextColor.AQUA),
-                                                                Component.empty(),
-                                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                            )
-                                                        )
-                                                        player.applyHypothermia()
-                                                    }
-
-                                                    in 30.1..100.0 -> {
-                                                        println(
-                                                                "Applying hyperthermia to ${player.name}"
-                                                        )
-                                                        player.showTitle(
-                                                            Title.title(
-                                                                Component.text("It's really hot here").color(NamedTextColor.RED),
-                                                                Component.empty(),
-                                                                Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                            )
-                                                        )
-                                                        player.applyHyperthermia()
-                                                    }
-                                                }
-                                                val thirst = DataManager.thirst.getPlayerThirst(player.uniqueId)
-                                                if (thirst == 0.0) {
-                                                    player.showTitle(
-                                                        Title.title(
-                                                            Component.text("I'm really thirsty").color(NamedTextColor.BLUE),
-                                                            Component.empty(),
-                                                            Title.Times.times(2.seconds.toJavaDuration(), 5.seconds.toJavaDuration(), 1.seconds.toJavaDuration())
-                                                        )
-                                                    )
-                                                    player.applyThirst()
-                                                }
-                                                if (showTemperature)
-                                                    player.displayTemperature(newTemperature, targetTemperature)
-                                                else player.displayWater(thirst)
-                                                showTemperature = showTemperature.not()
-                                            }
-                                },
-                            3.seconds.inTicks.toLong(),
-                            3.seconds.inTicks.toLong()
-                        )
-    }
-
-    override fun onDisable() {
-        println("Disabled")
-        Bukkit.getScheduler().cancelTask(schedulerId)
-        DataManager.currency.commitToDB()
-        DataManager.temperature.commitToDB()
-        DataManager.thirst.commitToDB()
-        DataManager.bounty.commitToDB()
+        server.pluginManager.registerEvents(EffectBlockManager, this)
     }
 
     companion object {
         lateinit var PLUGIN: StayHotdrated
         lateinit var CONFIG: PluginConfig
+        lateinit var ADVANCEMENT_API: UltimateAdvancementAPI
     }
 }
 
