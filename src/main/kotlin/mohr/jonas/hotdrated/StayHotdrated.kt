@@ -6,7 +6,8 @@ import com.fren_gor.ultimateAdvancementAPI.events.PlayerLoadingCompletedEvent
 import com.jeff_media.customblockdata.CustomBlockData
 import kotlinx.serialization.json.Json
 import mohr.jonas.hotdrated.data.PluginConfig
-import mohr.jonas.hotdrated.data.advancements.reunification.ReunificationAdvancementTab
+import mohr.jonas.hotdrated.data.advancements.tabs.CombatAdvancementTab
+import mohr.jonas.hotdrated.data.advancements.tabs.ReunificationAdvancementTab
 import mohr.jonas.hotdrated.db.DataManager
 import mohr.jonas.hotdrated.managers.*
 import org.bukkit.event.EventHandler
@@ -33,7 +34,6 @@ class StayHotdrated : JavaPlugin(), Listener {
         DataManager.developmentLevel.set(DataManager.developmentLevel.recalculate(this))
         main.enableInMemory()
         ADVANCEMENT_API = UltimateAdvancementAPI.getInstance(this)
-        //ReunificationAdvancementTab
     }
 
     override fun onLoad() {
@@ -45,6 +45,10 @@ class StayHotdrated : JavaPlugin(), Listener {
     fun onPlayerJoin(e: PlayerLoadingCompletedEvent) {
         ReunificationAdvancementTab.grantRootAdvancement(e.player)
         ReunificationAdvancementTab.showTab(e.player)
+        ReunificationAdvancementTab.advancements.forEach { it.grant(e.player) }
+        CombatAdvancementTab.grantRootAdvancement(e.player)
+        CombatAdvancementTab.showTab(e.player)
+        CombatAdvancementTab.advancements.forEach { it.grant(e.player) }
     }
 
     override fun onDisable() {
