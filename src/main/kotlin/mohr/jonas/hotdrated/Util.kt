@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.concurrent.Executors
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -18,6 +19,8 @@ val Duration.inTicks: Int
 fun Double.mapToRange(from: ClosedFloatingPointRange<Double>, to: ClosedFloatingPointRange<Double>): Double {
     return to.start + ((to.endInclusive - to.start) / (from.endInclusive - from.start)) * (this - from.start)
 }
+
+private val threadPool = Executors.newCachedThreadPool()
 
 fun Player.applyHypothermia() {
     this.freezeTicks = 15.seconds.inTicks
@@ -109,3 +112,9 @@ fun <T> Random.weightedChoice(choices: List<T>, weights: List<Int>): T {
 }
 
 fun String.toValidKey() = this.lowercase().replace(Regex("\\W"), "_")
+
+fun <T, U, V> runAsync(t: T, runner: (T) -> U, then: (U) -> V) {
+    threadPool.submit {
+        then(runner(t))
+    }
+}

@@ -86,7 +86,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Sanic",
         x = right(),
         y = 0,
-        resultingPotionType = PotionType.SPEED
+        resultingPotionType = PotionType.SPEED,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "wind_staff"))
     )
     brewingAdvancement(
         name = "Like going fast...",
@@ -94,7 +95,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "...But with UNO reverse",
         x = right(),
         y = 0,
-        resultingPotionType = PotionType.SLOWNESS
+        resultingPotionType = PotionType.SLOWNESS,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "storm_staff"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -111,7 +113,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Better not break you feet...",
         x = right(),
         y = 1,
-        resultingPotionType = PotionType.JUMP
+        resultingPotionType = PotionType.JUMP,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "angel_talisman"))
     )
     craftAdvancement(
         parent = brewingStand,
@@ -128,7 +131,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Sorry to say, but true",
         x = right(),
         y = 2,
-        resultingPotionType = PotionType.STRENGTH
+        resultingPotionType = PotionType.STRENGTH,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "warrior_talisman"))
     )
     craftAdvancement(
         parent = brewingStand,
@@ -145,7 +149,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Big pharma would like to know you location",
         x = right(),
         y = 3,
-        resultingPotionType = PotionType.INSTANT_HEAL
+        resultingPotionType = PotionType.INSTANT_HEAL,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "golden_apple_juice"))
     )
     brewingAdvancement(
         name = "Ouch",
@@ -153,7 +158,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "That hurt",
         x = right(),
         y = 3,
-        resultingPotionType = PotionType.INSTANT_DAMAGE
+        resultingPotionType = PotionType.INSTANT_DAMAGE,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "magical_zombie_pills"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -170,7 +176,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "You better not drink that",
         x = right(),
         y = 4,
-        resultingPotionType = PotionType.POISON
+        resultingPotionType = PotionType.POISON,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "ancient_altar"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -187,7 +194,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "But, let's be honest, worse",
         x = right(),
         y = 5,
-        resultingPotionType = PotionType.REGEN
+        resultingPotionType = PotionType.REGEN,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "knight_talisman"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -204,7 +212,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "...But who asked",
         x = right(),
         y = 6,
-        resultingPotionType = PotionType.FIRE_RESISTANCE
+        resultingPotionType = PotionType.FIRE_RESISTANCE,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "fire_talisman"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -221,7 +230,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "...But is your phone water resistant?",
         x = right(),
         y = 7,
-        resultingPotionType = PotionType.WATER_BREATHING
+        resultingPotionType = PotionType.WATER_BREATHING,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "water_talisman"))
     )
     craftAdvancement(
         parent = brewingStand,
@@ -238,7 +248,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Almost like Nightwish (an awesome band, check it out)",
         x = right(),
         y = 8,
-        resultingPotionType = PotionType.NIGHT_VISION
+        resultingPotionType = PotionType.NIGHT_VISION,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "glowstone_armor"))
     )
     brewingAdvancement(
         name = "Just because it can't see you...",
@@ -246,7 +257,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "...Doesn't mean it can't hurt you",
         x = right(),
         y = 8,
-        resultingPotionType = PotionType.INVISIBILITY
+        resultingPotionType = PotionType.INVISIBILITY,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "glowstone_armor"))
     )
     craftAdvancement(
         parent = brewingStand,
@@ -263,7 +275,8 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "Teenage mutant ninja turtle master",
         x = right(),
         y = 9,
-        resultingPotionType = PotionType.TURTLE_MASTER
+        resultingPotionType = PotionType.TURTLE_MASTER,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "scroll_of_dimensional_teleposition"))
     )
     pickupAdvancement(
         parent = brewingStand,
@@ -280,6 +293,7 @@ val BrewingAdvancementTab = tab(StayHotdrated.ADVANCEMENT_API, "Brewing") {
         description = "...Doesn't mean it won't hurt",
         x = right(),
         y = 10,
-        resultingPotionType = PotionType.SLOW_FALLING
+        resultingPotionType = PotionType.SLOW_FALLING,
+        giveReward = slimefunResearch(NamespacedKey("slimefun", "boots_of_the_stomper"))
     )
 }

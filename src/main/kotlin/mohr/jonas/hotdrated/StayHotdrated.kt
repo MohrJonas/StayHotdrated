@@ -43,7 +43,6 @@ class StayHotdrated : JavaPlugin(), Listener {
     fun onPlayerJoin(e: PlayerLoadingCompletedEvent) {
         Advancements.forEach {
             it.showTab(e.player)
-            //TODO remove in production
             it.grantRootAdvancement(e.player)
             //TODO remove in production
             it.advancements.forEach { it.grant(e.player) }
